@@ -7,7 +7,7 @@ This repository contains code for super-resolution of wind fields using GAN-base
 
 ```
 .
-├── data/                      # Contains Zarr and CSV wind data
+├── data/                      # Contains Zarr and CSV wind data (Currently not available due to manuscript under review.)
 ├── gan/                      # GAN model training and evaluation logic
 ├── model/                    # Model architecture (Generator, Critic)
 ├── model_checkpoiints/      # Training checkpoints
@@ -27,7 +27,7 @@ This repository contains code for super-resolution of wind fields using GAN-base
 ### 1. Setup
 
 ```bash
-git clone https://github.com/your-username/wind-sr-forecasting.git
+git clone https://github.com/JUN-WEI-DING/wind-SR.git
 cd wind-sr-forecasting
 pip install -r requirements.txt
 ```
