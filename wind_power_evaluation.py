@@ -19,7 +19,6 @@ class WindFarmEvaluator:
         self.power_curves = self._load_power_curves()
 
     def _load_power_curves(self):
-        # 所有風機型號的風速-功率對照表（略，與你提供相同，建議外部 JSON 管理）
         return {
             "Vestas V80": {1: 0.0, 2: 0.0, 3: 0.0, 3.5: 35, 4: 70, 4.5: 117.0, 5: 165.0,
                      5.5: 225.0, 6.0: 285.0, 6.5: 372, 7.0: 459, 7.5: 580, 
@@ -151,7 +150,6 @@ class WindFarmEvaluator:
             lat_index = row["lat_index"]
             lon_index = row["lon_index"]
 
-            # 取風速資料
             era5_ws10 = pd.Series(self.era5[:, 0, lat_index, lon_index], index=self.timeindex)
             era5_ws100 = pd.Series(self.era5[:, 1, lat_index, lon_index], index=self.timeindex)
             icon_ws10 = pd.Series(self.icon[:, 0, lat_index, lon_index], index=self.timeindex)
@@ -159,7 +157,6 @@ class WindFarmEvaluator:
             sr_ws10 = pd.Series(self.gen_srimage[:, 0, lat_index, lon_index], index=self.timeindex)
             sr_ws100 = pd.Series(self.gen_srimage[:, 1, lat_index, lon_index], index=self.timeindex)
 
-            # 插值至 hub 高度
             if wind_speed_source == "era5":
                 ws = self.wind_speed_at_hub_height(era5_ws10, era5_ws100, hub_height)
             elif wind_speed_source == "icon":
@@ -167,7 +164,6 @@ class WindFarmEvaluator:
             else:
                 ws = self.wind_speed_at_hub_height(sr_ws10, sr_ws100, hub_height)
 
-            # 功率估計
             est_power = self.estimate_actual_power(ws, model=model, loss_base=loss_base)
             est_power.name = "estimated"
             try:
