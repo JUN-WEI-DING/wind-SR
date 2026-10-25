@@ -1,0 +1,38 @@
+[project]
+name = "windsr"
+version = "1.0.0"
+description = "WindSR: wind super-resolution over Taiwan from ERA5, with its data build and evaluation"
+license = "MIT"
+requires-python = "==3.13.*"
+dependencies = [
+    "dask==2026.8.0",
+    "numcodecs==0.17.1",
+    "numpy==2.5.4",
+    "pandas==3.1.0",
+    "pyarrow==26.0.0",
+    "scipy==1.18.1",
+    "xarray==2026.9.0",
+    "zarr==3.4.1",
+]
+
+[project.optional-dependencies]
+train = ["torch==2.9.1"]
+
+[project.scripts]
+windsr = "windsr.__main__:main"
+
+[dependency-groups]
+dev = ["pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/windsr"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "data: reads the data directory named by WINDSR_DATA; skipped when it is not set",
+]

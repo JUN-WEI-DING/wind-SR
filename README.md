@@ -1,102 +1,40 @@
+# WindSR
 
-# Wind Super-Resolution Forecasting
+Code for Ding, J.-W. & Hsieh, I-Y. L., *Super-Resolution Wind Mapping with Deep Learning for Scalable Renewable
+Energy Planning*, Communications Earth & Environment 7, 51 (2026),
+[doi:10.1038/s43247-025-03072-9](https://doi.org/10.1038/s43247-025-03072-9).
 
-This repository contains code for super-resolution of wind fields using GAN-based models. The project includes data preparation, model training, inference, and performance evaluation using multiple data sources including ICON, ERA5, ground stations, and wind farm data.
+WindSR turns hourly ERA5 wind (0.25 deg) into a 0.125 deg wind map of Taiwan at 10 m and 100 m. ERA5 is its only
+input. In training, a content loss holds the map's large scales to ERA5 and a critic judges its small scales
+against the ICON model.
 
-## 📁 Folder Structure
+## Run
 
-```
-.
-├── data/                      # Contains Zarr and CSV wind data (Currently not available due to manuscript under review.)
-├── gan/                      # GAN model training and evaluation logic
-├── model/                    # Model architecture (Generator, Critic)
-├── model_checkpoiints/      # Training checkpoints
-├── model_parameter/         # Inference model weights
-├── utils/                    # Utility functions (normalization, IO, etc.)
-├── ground_station_evaluation.py   # Evaluation using ground station observations
-├── inference.py             # Script for GAN inference and SR image generation
-├── train.py                 # Model training entry point
-├── wind_power_evaluation.py # Wind farm power estimation and evaluation
-├── requirements.txt         # Python dependencies
-└── README.md                # Project overview (this file)
-```
+You need Linux, [uv](https://docs.astral.sh/uv/), and the dataset of Zenodo record
+[doi:10.5281/zenodo.17647354](https://doi.org/10.5281/zenodo.17647354) unpacked into a directory `DATA`
+([DATA.md](DATA.md)). Training and prediction also need an NVIDIA GPU.
 
-## 🚀 Getting Started
-
-
-### 1. Setup
-
-```bash
-git clone https://github.com/JUN-WEI-DING/wind-SR.git
-cd wind-sr-forecasting
-pip install -r requirements.txt
+```sh
+git clone https://github.com/JUN-WEI-DING/wind-SR.git && cd wind-SR
+uv sync --frozen --extra train
+uv run --frozen windsr run DATA OUT
 ```
 
-### 2. Train Model
+`windsr run` checks DATA against its SHA256SUMS, trains the network and predicts into the new directory
+OUT/model, and evaluates into OUT/evaluation. The same steps one at a time:
 
-Train the GAN model using ICON/ERA5 data:
-
-```bash
-python train.py --z_dim 1 --input_channel 8 --output_channel 2 --N 3 --batch_size 256 --epochs 500
+```sh
+uv run --frozen windsr verify-data DATA
+uv run --frozen windsr train DATA RUN
+uv run --frozen windsr predict DATA RUN
+uv run --frozen windsr evaluate DATA OUT --model windsr=RUN/test.zarr,RUN/train.zarr
 ```
 
-📝 All training parameters (e.g., `--lr`, `--clip_value`, `--model_save`, etc.) can be customized via command-line arguments.
+`windsr evaluate` scores any prediction store with `wind_speed_10m` on the 0.125 deg grid. `uv sync --frozen` alone,
+without torch, is enough to verify DATA and evaluate prediction stores. Tests run with `uv run --frozen pytest`; set
+`WINDSR_DATA=DATA` to include those that read the data. To build DATA from the raw sources, see [DATA.md](DATA.md).
 
-### 3. Run Inference
+## Citation and license
 
-Generate super-resolved wind maps:
-
-```bash
-python inference.py --z_dim 1 --input_channel 8 --output_channel 2 --N 3
-```
-
-📝 You may also configure number of samples, device, or batch size using additional arguments.
-
-### 4. Ground Station Evaluation
-
-Evaluate model accuracy against real-world ground station measurements:
-
-```bash
-python ground_station_evaluation.py
-```
-
-### 5. Wind Farm Power Estimation
-
-Simulate wind power generation using predicted wind fields:
-
-```bash
-python wind_power_evaluation.py
-```
-
-📝 All scripts support optional arguments for flexible model configuration, data paths, and evaluation settings.
-
-
-## 🧠 Model Overview
-
-- **Generator**: Conditional convolutional GAN for spatial super-resolution.
-- **Critic**: Discriminator model using multi-scale patches.
-- **Input**: ERA5 low-resolution wind fields.
-- **Target**: Super-Resolution Wind Farm.
-
-## 📊 Data Sources
-
-- ICON Zarr dataset
-- ERA5 Zarr dataset
-- Ground station observations
-- Wind farm CSV 
-
-## 📦 Requirements
-
-See `requirements.txt` for dependencies. Key packages include:
-
-- `torch`
-- `xarray`
-- `cartopy`
-- `matplotlib`
-- `numpy`
-- `pandas`
-
-## 👤 Author
-
-Developed by Jun-Wei Ding, NTU Civil Engineering  
-Contact: d13521023@ntu.edu.tw
+Cite the paper and the dataset. The code is under the MIT License ([LICENSE](LICENSE)). The dataset is under
+CC BY 4.0; [DATA.md](DATA.md) lists its sources and the credit each requires.
